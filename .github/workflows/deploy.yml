@@ -12,11 +12,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # - name: Start minikube
-    #   uses: medyagh/setup-minikube@master
-      
-    # - name: Try the cluster !
-    #   run: kubectl get pods -A
+    - name: Ensure Minikube is running
+      run: |
+        minikube status || minikube start
+
+    - name: Set up kubectl
+      run: |
+        kubectl config use-context minikube
 
     - name: Log in to Docker Hub
       run: |
@@ -31,11 +33,6 @@ jobs:
       run: |
         docker build -t ${{ secrets.DOCKER_USERNAME }}/myapp-frontend:latest ./frontend
         docker push ${{ secrets.DOCKER_USERNAME }}/myapp-frontend:latest
-
-    - name: Set up Kubeconfig
-      run: |
-        mkdir -p $HOME/.kube
-        echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > $HOME/.kube/config
 
     - name: Deploy to Kubernetes
       run: |
